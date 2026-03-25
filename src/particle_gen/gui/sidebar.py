@@ -26,10 +26,18 @@ _CORE_PARAMS = [
      "Maximum number of particles alive at once."),
     ("particle_size", "Particle Size", 0.5, 100.0, 4.0, 1, 0.5,
      "Base size of particles in pixels."),
+    ("size_min", "Size Min", 0.1, 3.0, 0.5, 1, 0.1,
+     "Minimum size multiplier applied to base particle size."),
+    ("size_max", "Size Max", 0.1, 3.0, 1.5, 1, 0.1,
+     "Maximum size multiplier applied to base particle size."),
     ("spawn_rate", "Spawn Rate", 1.0, 5000.0, 100.0, 1, 10.0,
      "Number of new particles spawned per second."),
     ("lifetime", "Lifetime", 0.1, 30.0, 2.0, 2, 0.1,
      "Average lifetime of each particle in seconds."),
+    ("lifetime_min", "Life Min", 0.1, 3.0, 0.5, 1, 0.1,
+     "Minimum lifetime multiplier."),
+    ("lifetime_max", "Life Max", 0.1, 3.0, 1.5, 1, 0.1,
+     "Maximum lifetime multiplier."),
     ("spread", "Spread", 0.01, 5.0, 0.5, 2, 0.05,
      "Velocity spread multiplier at spawn."),
 ]
@@ -92,6 +100,7 @@ class Sidebar(QScrollArea):
         self._add_reset_all_button()
         self._add_param_group("Core", _CORE_PARAMS)
         self._add_spawn_section()
+        self._add_shapes_section()
         self._add_param_group("Physics", _PHYSICS_PARAMS)
         self._add_lifecycle_section()
         self._add_colors_section()
@@ -184,6 +193,31 @@ class Sidebar(QScrollArea):
             layout.addWidget(dsb)
             self._widgets[key] = dsb
         self._layout.addWidget(group)
+
+    def _add_shapes_section(self) -> None:
+        group = QGroupBox("Shapes")
+        layout = QVBoxLayout(group)
+
+        self._shape_buttons: dict[str, QPushButton] = {}
+        btn_layout = QHBoxLayout()
+        for shape_name in ["circle", "square", "triangle", "diamond", "star", "ring"]:
+            btn = QPushButton(shape_name.capitalize())
+            btn.setCheckable(True)
+            btn.setChecked(shape_name == "circle")
+            btn.clicked.connect(
+                lambda checked, s=shape_name: self._on_shape_toggled(s, checked)
+            )
+            btn_layout.addWidget(btn)
+            self._shape_buttons[shape_name] = btn
+        layout.addLayout(btn_layout)
+        self._layout.addWidget(group)
+
+    def _on_shape_toggled(self, shape: str, checked: bool) -> None:
+        selected = [s for s, btn in self._shape_buttons.items() if btn.isChecked()]
+        if not selected:
+            self._shape_buttons[shape].setChecked(True)
+            return
+        self._emit("particle_shapes", selected)
 
     def _add_lifecycle_section(self) -> None:
         group = QGroupBox("Lifecycle")
@@ -334,8 +368,10 @@ class Sidebar(QScrollArea):
     def _emit_all_params(self, preset: ParticlePreset) -> None:
         """Emit params_changed for every parameter from a preset."""
         for key in (
-            "max_particles", "particle_size", "spawn_rate", "lifetime", "spread",
+            "max_particles", "particle_size", "size_min", "size_max",
+            "spawn_rate", "lifetime", "lifetime_min", "lifetime_max", "spread",
             "spawn_mode", "spawn_x", "spawn_y", "spawn_radius",
+            "particle_shapes",
             "gravity_x", "gravity_y", "speed_min", "speed_max",
             "drag", "turbulence", "radial_force", "vortex",
             "size_over_life", "fade_curve", "color_over_life", "colors",
@@ -404,8 +440,15 @@ class Sidebar(QScrollArea):
             self._set_dsb("turbulence", preset.turbulence)
             self._set_dsb("radial_force", preset.radial_force)
             self._set_dsb("vortex", preset.vortex)
+            self._set_dsb("size_min", preset.size_min)
+            self._set_dsb("size_max", preset.size_max)
+            self._set_dsb("lifetime_min", preset.lifetime_min)
+            self._set_dsb("lifetime_max", preset.lifetime_max)
             self._set_combo("size_over_life", preset.size_over_life)
             self._set_combo("fade_curve", preset.fade_curve)
+
+            for shape_name, btn in self._shape_buttons.items():
+                btn.setChecked(shape_name in preset.particle_shapes)
 
             cb = self._widgets.get("color_over_life")
             if isinstance(cb, QCheckBox):
