@@ -72,3 +72,47 @@ def test_load_builtin_preset() -> None:
 def test_load_builtin_preset_not_found() -> None:
     with pytest.raises(FileNotFoundError):
         load_builtin_preset("nonexistent")
+
+
+def test_default_shapes() -> None:
+    p = ParticlePreset(name="test", description="test")
+    assert p.particle_shapes == ["circle"]
+    assert p.size_min == 0.5
+    assert p.size_max == 1.5
+    assert p.lifetime_min == 0.5
+    assert p.lifetime_max == 1.5
+
+
+def test_validation_size_min_max() -> None:
+    with pytest.raises(ValueError, match="size_min.*size_max"):
+        ParticlePreset(name="bad", description="", size_min=2.0, size_max=1.0)
+
+
+def test_validation_lifetime_min_max() -> None:
+    with pytest.raises(ValueError, match="lifetime_min.*lifetime_max"):
+        ParticlePreset(name="bad", description="", lifetime_min=2.0, lifetime_max=1.0)
+
+
+def test_validation_invalid_shape() -> None:
+    with pytest.raises(ValueError, match="particle_shapes"):
+        ParticlePreset(name="bad", description="", particle_shapes=["hexagon"])
+
+
+def test_validation_empty_shapes() -> None:
+    with pytest.raises(ValueError, match="particle_shapes"):
+        ParticlePreset(name="bad", description="", particle_shapes=[])
+
+
+def test_round_trip_new_fields() -> None:
+    p = ParticlePreset(
+        name="test", description="shapes",
+        size_min=0.3, size_max=2.0,
+        lifetime_min=0.8, lifetime_max=1.2,
+        particle_shapes=["circle", "star", "diamond"],
+    )
+    with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+        save_preset(p, Path(f.name))
+        loaded = load_preset(Path(f.name))
+    assert loaded.size_min == 0.3
+    assert loaded.size_max == 2.0
+    assert loaded.particle_shapes == ["circle", "star", "diamond"]

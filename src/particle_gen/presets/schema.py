@@ -7,6 +7,7 @@ from pathlib import Path
 VALID_SPAWN_MODES = {"point", "line", "circle", "edges", "random"}
 VALID_SIZE_OVER_LIFE = {"constant", "grow", "shrink", "pulse"}
 VALID_FADE_CURVES = {"linear", "ease_out", "flash"}
+VALID_PARTICLE_SHAPES = {"circle", "square", "triangle", "diamond", "star", "ring"}
 
 
 @dataclass
@@ -28,6 +29,15 @@ class ParticlePreset:
     spawn_x: float = 0.5
     spawn_y: float = 0.5
     spawn_radius: float = 0.3
+
+    # Randomization
+    size_min: float = 0.5
+    size_max: float = 1.5
+    lifetime_min: float = 0.5
+    lifetime_max: float = 1.5
+
+    # Shapes
+    particle_shapes: list[str] = field(default_factory=lambda: ["circle"])
 
     # Physics
     gravity_x: float = 0.0
@@ -64,6 +74,23 @@ class ParticlePreset:
         if self.fade_curve not in VALID_FADE_CURVES:
             raise ValueError(
                 f"fade_curve must be one of {VALID_FADE_CURVES}, got '{self.fade_curve}'"
+            )
+        if self.size_min > self.size_max:
+            raise ValueError(
+                f"size_min ({self.size_min}) must be <= size_max ({self.size_max})"
+            )
+        if self.lifetime_min > self.lifetime_max:
+            raise ValueError(
+                f"lifetime_min ({self.lifetime_min}) must be <= "
+                f"lifetime_max ({self.lifetime_max})"
+            )
+        if not self.particle_shapes:
+            raise ValueError("particle_shapes must not be empty")
+        invalid = set(self.particle_shapes) - VALID_PARTICLE_SHAPES
+        if invalid:
+            raise ValueError(
+                f"particle_shapes contains invalid shapes: {invalid}. "
+                f"Valid: {VALID_PARTICLE_SHAPES}"
             )
 
 
