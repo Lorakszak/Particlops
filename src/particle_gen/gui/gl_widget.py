@@ -75,24 +75,13 @@ class GLWidget(QOpenGLWidget):
         if w <= 0 or h <= 0:
             return
 
+        # QOpenGLWidget provides its own FBO as the "default" framebuffer.
+        # Detect its ID so moderngl renders into it directly.
+        qt_fbo_id = self.defaultFramebufferObject()
+        screen = self._ctx.detect_framebuffer(qt_fbo_id)
+
         resolution = (w, h)
-        fbo = self._renderer.ensure_fbo(resolution)
-        self._renderer.render_frame(self._system, fbo, resolution)
-
-        # Blit FBO to default framebuffer
-        self._ctx.screen.use()
-        self._ctx.viewport = (0, 0, w, h)
-        self._ctx.clear(0.0, 0.0, 0.0, 1.0)
-
-        if self._renderer._fbo_texture:
-            self._renderer._fbo_texture.use(0)
-            # Use simple full-screen blit via reading and writing back
-            data = fbo.read(components=3)
-            arr = np.frombuffer(data, dtype=np.uint8).reshape(h, w, 3)
-            # Write to screen - moderngl's screen FBO
-            screen_texture = self._ctx.texture((w, h), 3, arr.tobytes())
-            screen_texture.use(0)
-            screen_texture.release()
+        self._renderer.render_frame(self._system, screen, resolution)
 
     def _tick(self) -> None:
         self.update()
@@ -115,7 +104,6 @@ class GLWidget(QOpenGLWidget):
                 [hex_to_rgb(c) for c in value], dtype="f4"
             )
         elif key == "max_particles":
-            # Requires system rebuild
             setattr(self._preset, key, value)
             self._rebuild_system()
         elif hasattr(self._system, key):
