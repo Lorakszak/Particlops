@@ -194,6 +194,13 @@ class Sidebar(QScrollArea):
             self._widgets[key] = dsb
         self._layout.addWidget(group)
 
+    _SHAPE_BTN_STYLE_ON = (
+        "QPushButton { background-color: #0078d4; color: #fff; border: 1px solid #0078d4; }"
+    )
+    _SHAPE_BTN_STYLE_OFF = (
+        "QPushButton { background-color: #3c3c3c; color: #888; border: 1px solid #555; }"
+    )
+
     def _add_shapes_section(self) -> None:
         group = QGroupBox("Shapes")
         layout = QVBoxLayout(group)
@@ -210,13 +217,21 @@ class Sidebar(QScrollArea):
             btn_layout.addWidget(btn)
             self._shape_buttons[shape_name] = btn
         layout.addLayout(btn_layout)
+        self._update_shape_styles()
         self._layout.addWidget(group)
+
+    def _update_shape_styles(self) -> None:
+        for btn in self._shape_buttons.values():
+            btn.setStyleSheet(
+                self._SHAPE_BTN_STYLE_ON if btn.isChecked() else self._SHAPE_BTN_STYLE_OFF
+            )
 
     def _on_shape_toggled(self, shape: str, checked: bool) -> None:
         selected = [s for s, btn in self._shape_buttons.items() if btn.isChecked()]
         if not selected:
             self._shape_buttons[shape].setChecked(True)
             return
+        self._update_shape_styles()
         self._emit("particle_shapes", selected)
 
     def _add_lifecycle_section(self) -> None:
@@ -449,6 +464,7 @@ class Sidebar(QScrollArea):
 
             for shape_name, btn in self._shape_buttons.items():
                 btn.setChecked(shape_name in preset.particle_shapes)
+            self._update_shape_styles()
 
             cb = self._widgets.get("color_over_life")
             if isinstance(cb, QCheckBox):
