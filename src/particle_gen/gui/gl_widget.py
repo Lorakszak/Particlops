@@ -75,13 +75,12 @@ class GLWidget(QOpenGLWidget):
         if w <= 0 or h <= 0:
             return
 
-        # QOpenGLWidget provides its own FBO as the "default" framebuffer.
-        # Detect its ID so moderngl renders into it directly.
-        qt_fbo_id = self.defaultFramebufferObject()
-        screen = self._ctx.detect_framebuffer(qt_fbo_id)
+        # detect_framebuffer() with no args reads the currently-bound FBO
+        # from OpenGL state — Qt has already bound the QOpenGLWidget's FBO.
+        fbo = self._ctx.detect_framebuffer()
 
         resolution = (w, h)
-        self._renderer.render_frame(self._system, screen, resolution)
+        self._renderer.render_frame(self._system, fbo, resolution)
 
     def _tick(self) -> None:
         self.update()
