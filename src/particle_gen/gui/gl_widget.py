@@ -53,6 +53,11 @@ class GLWidget(QOpenGLWidget):
             turbulence=p.turbulence,
             radial_force=p.radial_force,
             vortex=p.vortex,
+            size_min=p.size_min,
+            size_max=p.size_max,
+            lifetime_min=p.lifetime_min,
+            lifetime_max=p.lifetime_max,
+            particle_shapes=p.particle_shapes,
             size_over_life=p.size_over_life,
             fade_curve=p.fade_curve,
             color_over_life=p.color_over_life,
@@ -101,6 +106,12 @@ class GLWidget(QOpenGLWidget):
             self._system.colors_hex = value
             self._system.colors_rgb = np.array(
                 [hex_to_rgb(c) for c in value], dtype="f4"
+            )
+        elif key == "particle_shapes" and isinstance(value, list):
+            from particle_gen.core.particles import SHAPE_MAP
+            self._system.particle_shapes = value
+            self._system._shape_indices = np.array(
+                [SHAPE_MAP[s] for s in value], dtype="f4"
             )
         elif key == "max_particles":
             setattr(self._preset, key, int(value))  # type: ignore[arg-type]

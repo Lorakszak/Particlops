@@ -64,6 +64,16 @@ _particle_options = [
     click.option("--turbulence", type=float, default=None),
     click.option("--radial-force", type=float, default=None),
     click.option("--vortex", type=float, default=None),
+    click.option("--size-min", type=float, default=None,
+                 help="Min size multiplier (default 0.5)"),
+    click.option("--size-max", type=float, default=None,
+                 help="Max size multiplier (default 1.5)"),
+    click.option("--lifetime-min", type=float, default=None,
+                 help="Min lifetime multiplier (default 0.5)"),
+    click.option("--lifetime-max", type=float, default=None,
+                 help="Max lifetime multiplier (default 1.5)"),
+    click.option("--particle-shapes", type=str, default=None,
+                 help="Comma-separated shapes (circle,square,triangle,diamond,star,ring)"),
     click.option("--size-over-life", type=click.Choice(
         ["constant", "grow", "shrink", "pulse"]), default=None),
     click.option("--fade-curve", type=click.Choice(
@@ -87,6 +97,7 @@ def _collect_overrides(**kwargs: object) -> dict:
         "spawn_mode", "spawn_x", "spawn_y", "spawn_radius",
         "gravity_x", "gravity_y", "speed_min", "speed_max",
         "drag", "turbulence", "radial_force", "vortex",
+        "size_min", "size_max", "lifetime_min", "lifetime_max", "particle_shapes",
         "size_over_life", "fade_curve", "color_over_life", "colors",
     }
     overrides = {}
@@ -95,6 +106,8 @@ def _collect_overrides(**kwargs: object) -> dict:
         if val is not None:
             if key == "colors" and isinstance(val, str):
                 overrides[key] = [c.strip() for c in val.split(",")]
+            elif key == "particle_shapes" and isinstance(val, str):
+                overrides[key] = [s.strip() for s in val.split(",")]
             else:
                 overrides[key] = val
     return overrides
