@@ -30,10 +30,10 @@ class Renderer:
         self._program = self.ctx.program(
             vertex_shader=vert_src, fragment_shader=frag_src,
         )
-        self._vbo = self.ctx.buffer(reserve=max_particles * 7 * 4)
+        self._vbo = self.ctx.buffer(reserve=max_particles * 8 * 4)
         self._vao = self.ctx.vertex_array(
             self._program,
-            [(self._vbo, "2f 1f 3f 1f", "in_position", "in_size", "in_color", "in_alpha")],
+            [(self._vbo, "2f 1f 3f 1f 1f", "in_position", "in_size", "in_color", "in_alpha", "in_shape")],
         )
 
     def ensure_fbo(self, resolution: tuple[int, int]) -> moderngl.Framebuffer:
