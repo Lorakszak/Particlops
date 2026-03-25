@@ -3,7 +3,7 @@
 import sys
 from importlib import resources
 
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QSurfaceFormat
 from PySide6.QtWidgets import QApplication
 
 from particle_gen.gui.main_window import MainWindow
@@ -20,6 +20,13 @@ def _load_icon() -> QIcon:
 
 def run_gui(preset: ParticlePreset) -> None:
     """Launch the GUI application."""
+    # Core profile required: gl_PointCoord is always (0,0) in compatibility
+    # profile because GL_POINT_SPRITE is disabled by default.
+    fmt = QSurfaceFormat()
+    fmt.setVersion(3, 3)
+    fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+    QSurfaceFormat.setDefaultFormat(fmt)
+
     app = QApplication.instance() or QApplication(sys.argv)
     app.setStyleSheet(DARK_STYLESHEET)  # type: ignore[union-attr]
 

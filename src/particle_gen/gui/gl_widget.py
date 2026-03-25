@@ -26,7 +26,7 @@ class GLWidget(QOpenGLWidget):
         self._timer.timeout.connect(self._tick)
 
     def initializeGL(self) -> None:
-        self._ctx = moderngl.create_context()
+        self._ctx = moderngl.create_context(standalone=False)
         self._renderer = Renderer(self._ctx)
         self._rebuild_system()
         self._last_time = time.monotonic()
@@ -59,7 +59,9 @@ class GLWidget(QOpenGLWidget):
             colors=p.colors,
         )
         if self._renderer:
+            self.makeCurrent()
             self._renderer.initialize(p.max_particles)
+            self.doneCurrent()
 
     def paintGL(self) -> None:
         if not self._ctx or not self._renderer or not self._system:
@@ -75,9 +77,7 @@ class GLWidget(QOpenGLWidget):
         if w <= 0 or h <= 0:
             return
 
-        # detect_framebuffer() with no args reads the currently-bound FBO
-        # from OpenGL state — Qt has already bound the QOpenGLWidget's FBO.
-        fbo = self._ctx.detect_framebuffer()
+        fbo = self._ctx.detect_framebuffer(self.defaultFramebufferObject())
 
         resolution = (w, h)
         self._renderer.render_frame(self._system, fbo, resolution)
@@ -103,7 +103,7 @@ class GLWidget(QOpenGLWidget):
                 [hex_to_rgb(c) for c in value], dtype="f4"
             )
         elif key == "max_particles":
-            setattr(self._preset, key, value)
+            setattr(self._preset, key, int(value))  # type: ignore[arg-type]
             self._rebuild_system()
         elif hasattr(self._system, key):
             setattr(self._system, key, value)

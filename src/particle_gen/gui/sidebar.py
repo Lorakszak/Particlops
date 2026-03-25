@@ -268,7 +268,7 @@ class Sidebar(QScrollArea):
         res_label.setObjectName("ParamLabel")
         res_row.addWidget(res_label)
         res_combo = QComboBox()
-        res_combo.addItems(["1920x1080", "1280x720", "3840x2160", "640x360"])
+        res_combo.addItems(["1920x1080", "2560x1440", "1280x720", "3840x2160", "640x360"])
         res_combo.setCurrentText("1920x1080")
         res_row.addWidget(res_combo)
         layout.addLayout(res_row)
