@@ -35,10 +35,10 @@ _CORE_PARAMS = [
 ]
 
 _SPAWN_PARAMS = [
-    ("spawn_x", "Spawn X", 0.0, 1.0, 0.5, 3, 0.01,
-     "Horizontal spawn position (0=left, 1=right)."),
-    ("spawn_y", "Spawn Y", 0.0, 1.0, 0.5, 3, 0.01,
-     "Vertical spawn position (0=bottom, 1=top)."),
+    ("spawn_x", "Spawn X", -0.25, 1.25, 0.5, 3, 0.01,
+     "Horizontal spawn position (0=left, 1=right). Values outside 0–1 spawn off-screen."),
+    ("spawn_y", "Spawn Y", -0.25, 1.25, 0.5, 3, 0.01,
+     "Vertical spawn position (0=bottom, 1=top). Values outside 0–1 spawn off-screen."),
     ("spawn_radius", "Radius", 0.01, 1.0, 0.3, 3, 0.01,
      "Spawn radius for circle mode."),
 ]
