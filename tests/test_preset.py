@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from particle_gen.presets.manager import list_builtin_presets, load_builtin_preset
 from particle_gen.presets.schema import ParticlePreset, load_preset, save_preset
 
 
@@ -49,3 +50,25 @@ def test_unknown_keys_in_json_ignored() -> None:
         json.dump(data, f)
     loaded = load_preset(Path(f.name))
     assert loaded.name == "x"
+
+
+def test_list_builtin_presets() -> None:
+    presets = list_builtin_presets()
+    assert len(presets) == 5
+    names = {p.name for p in presets}
+    assert "gentle_snow" in names
+    assert "rising_sparks" in names
+    assert "vortex_swirl" in names
+    assert "stardust" in names
+    assert "fireflies" in names
+
+
+def test_load_builtin_preset() -> None:
+    p = load_builtin_preset("gentle_snow")
+    assert p.name == "gentle_snow"
+    assert p.spawn_mode == "random"
+
+
+def test_load_builtin_preset_not_found() -> None:
+    with pytest.raises(FileNotFoundError):
+        load_builtin_preset("nonexistent")
