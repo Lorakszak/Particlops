@@ -265,10 +265,14 @@ class ParticleSystem:
             rand_t = rng.uniform(0.0, 1.0, n).astype("f4")
             bottom, top = edge == 0, edge == 1
             left, right = edge == 2, edge == 3
-            pos_x[bottom] = rand_t[bottom]; pos_y[bottom] = 0.0
-            pos_x[top] = rand_t[top]; pos_y[top] = 1.0
-            pos_x[left] = 0.0; pos_y[left] = rand_t[left]
-            pos_x[right] = 1.0; pos_y[right] = rand_t[right]
+            pos_x[bottom] = rand_t[bottom]
+            pos_y[bottom] = 0.0
+            pos_x[top] = rand_t[top]
+            pos_y[top] = 1.0
+            pos_x[left] = 0.0
+            pos_y[left] = rand_t[left]
+            pos_x[right] = 1.0
+            pos_y[right] = rand_t[right]
         elif self.spawn_mode == "random":
             pos_x = rng.uniform(0.0, 1.0, n).astype("f4")
             pos_y = rng.uniform(0.0, 1.0, n).astype("f4")
