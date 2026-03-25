@@ -153,5 +153,59 @@ def test_get_render_data_shape(system: ParticleSystem) -> None:
     system.step(dt=0.1)
     data = system.get_render_data()
     assert data.ndim == 2
-    assert data.shape[1] == 7  # x, y, size, r, g, b, alpha
+    assert data.shape[1] == 8  # x, y, size, r, g, b, alpha, shape
     assert data.shape[0] == system.active_count
+
+
+def test_shape_index_populated() -> None:
+    s = ParticleSystem(
+        max_particles=100, spawn_rate=1000.0, lifetime=2.0,
+        particle_size=4.0, spread=0.5, spawn_mode="point",
+        spawn_x=0.5, spawn_y=0.5, spawn_radius=0.3,
+        gravity_x=0.0, gravity_y=0.0, speed_min=0.05, speed_max=0.3,
+        drag=0.0, turbulence=0.0, radial_force=0.0, vortex=0.0,
+        size_over_life="constant", fade_curve="linear",
+        color_over_life=False, colors=["#ff0000"],
+        particle_shapes=["square", "star"],
+    )
+    s.step(dt=0.1)
+    data = s.get_render_data()
+    shapes = data[:, 7]
+    # square=1, star=4
+    assert set(shapes.astype(int).tolist()).issubset({1, 4})
+
+
+def test_custom_size_range() -> None:
+    s = ParticleSystem(
+        max_particles=500, spawn_rate=5000.0, lifetime=10.0,
+        particle_size=10.0, spread=0.5, spawn_mode="point",
+        spawn_x=0.5, spawn_y=0.5, spawn_radius=0.3,
+        gravity_x=0.0, gravity_y=0.0, speed_min=0.01, speed_max=0.02,
+        drag=0.0, turbulence=0.0, radial_force=0.0, vortex=0.0,
+        size_over_life="constant", fade_curve="linear",
+        color_over_life=False, colors=["#ff0000"],
+        size_min=0.8, size_max=1.2,
+    )
+    s.step(dt=0.1)
+    from particle_gen.core.particles import _BSIZE
+    active = s.particles[:s.active_count]
+    assert active[:, _BSIZE].min() >= 8.0 - 0.01
+    assert active[:, _BSIZE].max() <= 12.0 + 0.01
+
+
+def test_custom_lifetime_range() -> None:
+    s = ParticleSystem(
+        max_particles=500, spawn_rate=5000.0, lifetime=4.0,
+        particle_size=4.0, spread=0.5, spawn_mode="point",
+        spawn_x=0.5, spawn_y=0.5, spawn_radius=0.3,
+        gravity_x=0.0, gravity_y=0.0, speed_min=0.01, speed_max=0.02,
+        drag=0.0, turbulence=0.0, radial_force=0.0, vortex=0.0,
+        size_over_life="constant", fade_curve="linear",
+        color_over_life=False, colors=["#ff0000"],
+        lifetime_min=0.9, lifetime_max=1.1,
+    )
+    s.step(dt=0.1)
+    from particle_gen.core.particles import _LIFE
+    active = s.particles[:s.active_count]
+    assert active[:, _LIFE].min() >= 3.6 - 0.01
+    assert active[:, _LIFE].max() <= 4.4 + 0.01

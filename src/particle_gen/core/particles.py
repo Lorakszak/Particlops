@@ -3,9 +3,11 @@
 import numpy as np
 
 # Particle array columns
-_COL_COUNT = 12
+_COL_COUNT = 13
 _X, _Y, _VX, _VY, _AGE, _LIFE, _BSIZE = 0, 1, 2, 3, 4, 5, 6
-_R, _G, _B, _ALPHA, _CIDX = 7, 8, 9, 10, 11
+_R, _G, _B, _ALPHA, _CIDX, _SHAPE = 7, 8, 9, 10, 11, 12
+
+SHAPE_MAP = {"circle": 0, "square": 1, "triangle": 2, "diamond": 3, "star": 4, "ring": 5}
 
 
 def _simple_noise(x: np.ndarray, y: np.ndarray, t: float) -> tuple[np.ndarray, np.ndarray]:
@@ -47,6 +49,11 @@ class ParticleSystem:
         turbulence: float = 0.0,
         radial_force: float = 0.0,
         vortex: float = 0.0,
+        size_min: float = 0.5,
+        size_max: float = 1.5,
+        lifetime_min: float = 0.5,
+        lifetime_max: float = 1.5,
+        particle_shapes: list[str] | None = None,
         size_over_life: str = "constant",
         fade_curve: str = "linear",
         color_over_life: bool = False,
@@ -70,6 +77,14 @@ class ParticleSystem:
         self.turbulence = turbulence
         self.radial_force = radial_force
         self.vortex = vortex
+        self.size_min = size_min
+        self.size_max = size_max
+        self.lifetime_min = lifetime_min
+        self.lifetime_max = lifetime_max
+        self.particle_shapes = particle_shapes or ["circle"]
+        self._shape_indices = np.array(
+            [SHAPE_MAP[s] for s in self.particle_shapes], dtype="f4"
+        )
         self.size_over_life = size_over_life
         self.fade_curve = fade_curve
         self.color_over_life = color_over_life
@@ -93,10 +108,10 @@ class ParticleSystem:
     def get_render_data(self) -> np.ndarray:
         """Return VBO-ready array: (N, 7) with position(2), size(1), color(3), alpha(1)."""
         if self.active_count == 0:
-            return np.zeros((0, 7), dtype="f4")
+            return np.zeros((0, 8), dtype="f4")
 
         active = self.particles[:self.active_count]
-        result = np.zeros((self.active_count, 7), dtype="f4")
+        result = np.zeros((self.active_count, 8), dtype="f4")
 
         age_ratio = active[:, _AGE] / np.maximum(active[:, _LIFE], 0.01)
         age_ratio = np.clip(age_ratio, 0.0, 1.0)
@@ -149,6 +164,7 @@ class ParticleSystem:
         result[:, 1] = active[:, _Y]
         result[:, 2] = size
         result[:, 6] = alpha
+        result[:, 7] = active[:, _SHAPE]
         return result
 
     def _update(self, dt: float) -> None:
@@ -240,11 +256,12 @@ class ParticleSystem:
         batch[:, _VX] = vx
         batch[:, _VY] = vy
         batch[:, _AGE] = 0.0
-        batch[:, _LIFE] = self.lifetime * rng.uniform(0.5, 1.5, n).astype("f4")
-        batch[:, _BSIZE] = self.particle_size * rng.uniform(0.5, 1.5, n).astype("f4")
+        batch[:, _LIFE] = self.lifetime * rng.uniform(self.lifetime_min, self.lifetime_max, n).astype("f4")
+        batch[:, _BSIZE] = self.particle_size * rng.uniform(self.size_min, self.size_max, n).astype("f4")
         batch[:, _R:_B + 1] = self.colors_rgb[color_indices]
         batch[:, _ALPHA] = 1.0
         batch[:, _CIDX] = color_indices.astype("f4")
+        batch[:, _SHAPE] = rng.choice(self._shape_indices, n)
         self.active_count = end
 
     def _spawn_positions(self, n: int) -> tuple[np.ndarray, np.ndarray]:
