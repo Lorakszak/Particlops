@@ -1,38 +1,68 @@
-# Particlops
+<p align="center">
+  <img src="src/particle_gen/assets/logo.png" width="180" alt="Particlops logo" />
+</p>
 
-A CLI + GUI tool for generating seamlessly looped particle videos on black backgrounds. The output videos are designed to be composited onto other footage using additive or screen blend modes in video editors.
+<h1 align="center">Particlops</h1>
 
-## Requirements
+<p align="center">
+  <strong>Seamlessly looped particle videos for compositing.</strong><br>
+  CLI + GUI &middot; OpenGL 3.3 &middot; Deterministic seeds &middot; 5 built-in presets
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=white" alt="Python 3.12" />
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License" />
+  <img src="https://img.shields.io/badge/renderer-moderngl-orange" alt="moderngl" />
+</p>
+
+---
+
+## Overview
+
+Generate particle animations on a black background, designed to be layered onto other footage with additive or screen blend modes. Every video loops seamlessly via a crossfade export pipeline.
+
+---
+
+<details open>
+<summary><strong>Installation</strong></summary>
+
+### Requirements
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
-- ffmpeg (must be on your PATH)
-- OpenGL 3.3+ capable GPU
+- ffmpeg on PATH
+- OpenGL 3.3+ GPU
 
 ### System dependencies
 
-**Fedora:**
+<details>
+<summary>Fedora</summary>
 
 ```bash
 sudo dnf install ffmpeg mesa-libGL
 ```
+</details>
 
-**Ubuntu/Debian:**
+<details>
+<summary>Ubuntu / Debian</summary>
 
 ```bash
 sudo apt install ffmpeg libgl1-mesa-glx libegl1
 ```
+</details>
 
-**macOS:**
+<details>
+<summary>macOS</summary>
 
 ```bash
 brew install ffmpeg
 ```
+</details>
 
-## Installation
+### Setup
 
 ```bash
-git clone <repo-url> && cd particle_gen
+git clone https://github.com/Lorakszak/Particlops.git && cd Particlops
 uv sync
 ```
 
@@ -42,17 +72,20 @@ For development tools (pytest, ruff, pyright):
 uv sync --extra dev
 ```
 
-## Usage
+</details>
 
-### GUI (live preview)
+---
 
-Launch the GUI with a live particle preview and sidebar controls:
+<details open>
+<summary><strong>GUI</strong></summary>
+
+Launch the live preview with sidebar controls:
 
 ```bash
 uv run particlops preview
 ```
 
-Start with a built-in preset:
+Load a built-in preset:
 
 ```bash
 uv run particlops preview --preset stardust
@@ -64,23 +97,28 @@ Load a custom preset file:
 uv run particlops preview --preset-file my_preset.json
 ```
 
-The GUI window has:
+The window has:
 
-- **Left panel** -- live OpenGL particle preview at ~60fps
-- **Right sidebar** -- all particle parameters grouped into sections (Core, Spawn, Physics, Lifecycle, Colors). Changes apply immediately to the preview.
-- **Export section** -- set duration, crossfade, resolution, fps, CRF, and output path. Click "Generate" to render the video in the background with a progress dialog.
+- **Left panel** -- live OpenGL particle preview at ~60 fps
+- **Right sidebar** -- grouped parameter controls (Core, Spawn, Shapes, Physics, Lifecycle, Colors). Changes apply instantly.
+- **Export section** -- duration, crossfade, resolution, fps, CRF, output path. Click **Generate** to render in the background.
 
-You can also load/save presets via the buttons at the top of the sidebar.
+Presets can be loaded / saved via the buttons at the top of the sidebar.
 
-### CLI (headless rendering)
+</details>
 
-Generate a looped particle video:
+---
+
+<details open>
+<summary><strong>CLI</strong></summary>
+
+### Basic render
 
 ```bash
 uv run particlops generate --preset rising_sparks --duration 30 --output sparks.mp4
 ```
 
-With custom parameters:
+### Full customization
 
 ```bash
 uv run particlops generate \
@@ -99,31 +137,34 @@ uv run particlops generate \
   --output vortex.mp4
 ```
 
-Quick test render (low-res, short):
+### Quick test render
 
 ```bash
 uv run particlops generate \
   --preset stardust \
-  --duration 5 \
-  --crossfade 2 \
-  --resolution 640x360 \
-  --fps 30 \
+  --duration 5 --crossfade 2 \
+  --resolution 640x360 --fps 30 \
   --output /tmp/test_loop.mp4
-```
 
-Verify the loop by playing it:
-
-```bash
 mpv --loop /tmp/test_loop.mp4
 ```
 
-### List built-in presets
+### Deterministic output
+
+```bash
+uv run particlops generate --preset fireflies --seed 42 --output fireflies.mp4
+```
+
+</details>
+
+---
+
+<details>
+<summary><strong>Presets</strong></summary>
 
 ```bash
 uv run particlops list-presets
 ```
-
-Available presets:
 
 | Preset | Description |
 |--------|-------------|
@@ -133,40 +174,39 @@ Available presets:
 | `stardust` | Gentle outward drift with white, cyan, and purple |
 | `fireflies` | Random slow pulsing particles in green and yellow |
 
-### Save/load custom presets
-
-Save current CLI settings to a JSON file:
+### Save / load custom presets
 
 ```bash
-uv run particlops generate --preset stardust --vortex 0.3 --save-preset my_preset.json --output out.mp4
-```
+# Save
+uv run particlops generate --preset stardust --vortex 0.3 \
+  --save-preset my_preset.json --output out.mp4
 
-Use a saved preset:
-
-```bash
+# Load
 uv run particlops generate --preset-file my_preset.json --output out.mp4
 ```
 
-### Reproducible renders
+</details>
 
-Use `--seed` for deterministic output:
+---
 
-```bash
-uv run particlops generate --preset fireflies --seed 42 --output fireflies.mp4
-```
+<details>
+<summary><strong>How the seamless loop works</strong></summary>
 
-## How the seamless loop works
+The export pipeline runs a single simulation pass rendering `duration + crossfade` total frames:
 
-The export pipeline runs the particle simulation in a single pass, rendering `duration + crossfade` total frames:
+1. **Pre-roll** -- simulation runs without recording so the screen starts populated
+2. **Head frames** (first `crossfade` seconds) -- compressed as PNGs, held in RAM
+3. **Middle frames** -- streamed to a lossless intermediate
+4. **Tail frames** (last `crossfade` seconds) -- alpha-blended with corresponding head frames
 
-1. **Pre-roll** -- the simulation runs without recording for several seconds so the screen starts populated with particles
-2. **Head frames** (first `crossfade` seconds) -- compressed as PNGs and held in RAM
-3. **Middle frames** -- streamed directly to a lossless intermediate file
-4. **Tail frames** (last `crossfade` seconds) -- alpha-blended with the corresponding head frames
+The blended segments are concatenated and encoded to H.264. When the video loops, the last-to-first transition is seamless.
 
-The blended head and middle segments are concatenated and encoded to the final H.264 MP4. When the video loops, the transition from the last frame back to the first is seamless because the crossfade region smoothly blends between them.
+</details>
 
-## CLI reference
+---
+
+<details>
+<summary><strong>CLI reference</strong></summary>
 
 ```
 particlops generate [OPTIONS]
@@ -213,7 +253,12 @@ Other:
   --save-preset PATH     Save current settings to JSON
 ```
 
-## Development
+</details>
+
+---
+
+<details>
+<summary><strong>Development</strong></summary>
 
 ```bash
 uv run pytest tests/ -v       # run tests
@@ -221,6 +266,8 @@ uv run ruff check src/ tests/ # lint
 uv run pyright src/            # type check
 ```
 
-## License
+</details>
 
-MIT
+---
+
+<p align="center">MIT License</p>
