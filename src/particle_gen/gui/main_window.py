@@ -140,6 +140,7 @@ class MainWindow(QMainWindow):
         self._progress_dialog = QProgressDialog("Rendering...", "Cancel", 0, 100, self)
         self._progress_dialog.setWindowTitle("Export")
         self._progress_dialog.setMinimumDuration(0)
+        self._progress_dialog.canceled.connect(self._on_export_cancel)
         self._progress_dialog.show()
 
         self._export_thread = ExportThread(pipeline)
@@ -147,6 +148,11 @@ class MainWindow(QMainWindow):
         self._export_thread.finished_ok.connect(self._on_export_done)
         self._export_thread.finished_err.connect(self._on_export_error)
         self._export_thread.start()
+
+    def _on_export_cancel(self) -> None:
+        """Signal the export pipeline to stop."""
+        if self._export_thread:
+            self._export_thread._pipeline.cancelled = True
 
     def _on_export_progress(self, p: float) -> None:
         if self._progress_dialog:
@@ -160,7 +166,8 @@ class MainWindow(QMainWindow):
     def _on_export_error(self, error: str) -> None:
         if self._progress_dialog:
             self._progress_dialog.close()
-        QMessageBox.critical(self, "Export Error", f"Export failed:\n{error}")
+        if "cancelled" not in error.lower():
+            QMessageBox.critical(self, "Export Error", f"Export failed:\n{error}")
 
     def closeEvent(self, event) -> None:  # type: ignore[override]
         self._gl_widget.cleanup()
