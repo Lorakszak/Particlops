@@ -62,8 +62,10 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         splitter.addWidget(self._gl_widget)
         splitter.addWidget(self._sidebar)
-        splitter.setStretchFactor(0, 3)
-        splitter.setStretchFactor(1, 1)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 0)
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
         self.setCentralWidget(splitter)
 
         # Connections

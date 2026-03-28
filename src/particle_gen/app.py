@@ -35,5 +35,5 @@ def run_gui(preset: ParticlePreset) -> None:
 
     window = MainWindow(preset)
     window.setWindowIcon(icon)
-    window.show()
+    window.showMaximized()
     app.exec()  # type: ignore[union-attr]

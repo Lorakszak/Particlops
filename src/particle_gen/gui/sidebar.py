@@ -1,6 +1,6 @@
 """Parameter sidebar with wavern-style drag spinboxes, color editor, and help buttons."""
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QSize, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -14,6 +14,13 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+
+class _NoScrollComboBox(QComboBox):
+    """QComboBox that ignores mouse wheel events to prevent accidental changes."""
+
+    def wheelEvent(self, event) -> None:  # type: ignore[override]
+        event.ignore()
 
 from particle_gen.gui.color_section import ColorSection
 from particle_gen.gui.drag_spinbox import DragSpinBox
@@ -86,7 +93,6 @@ class Sidebar(QScrollArea):
     def __init__(self) -> None:
         super().__init__()
         self.setWidgetResizable(True)
-        self.setMinimumWidth(340)
         self._block_signals = False
 
         container = QWidget()
@@ -94,7 +100,7 @@ class Sidebar(QScrollArea):
         self._layout.setSpacing(6)
         self._layout.setContentsMargins(6, 6, 6, 6)
 
-        self._widgets: dict[str, DragSpinBox | QComboBox | QCheckBox] = {}
+        self._widgets: dict[str, DragSpinBox | _NoScrollComboBox | QCheckBox] = {}
 
         self._add_preset_section()
         self._add_reset_all_button()
@@ -109,13 +115,23 @@ class Sidebar(QScrollArea):
         self._layout.addStretch()
         self.setWidget(container)
 
+    def sizeHint(self) -> QSize:
+        """Return the content's natural width so the splitter respects it."""
+        hint = super().sizeHint()
+        if self.widget():
+            content_w = self.widget().sizeHint().width()
+            scrollbar_w = self.verticalScrollBar().sizeHint().width()
+            frame_w = self.frameWidth() * 2
+            hint.setWidth(content_w + scrollbar_w + frame_w)
+        return hint
+
     # --- Section builders ---
 
     def _add_preset_section(self) -> None:
         group = QGroupBox("Preset")
         layout = QVBoxLayout(group)
 
-        self._preset_combo = QComboBox()
+        self._preset_combo = _NoScrollComboBox()
         self._preset_combo.addItem("(default)")
         from particle_gen.presets.manager import list_builtin_presets
         for p in list_builtin_presets():
@@ -167,7 +183,7 @@ class Sidebar(QScrollArea):
         mode_label = QLabel("Mode")
         mode_label.setObjectName("ParamLabel")
         mode_row.addWidget(mode_label)
-        combo = QComboBox()
+        combo = _NoScrollComboBox()
         combo.addItems(["point", "line", "circle", "edges", "random"])
         combo.setCurrentText("point")
         combo.currentTextChanged.connect(lambda val: self._emit("spawn_mode", val))
@@ -243,7 +259,7 @@ class Sidebar(QScrollArea):
         sol_label = QLabel("Size Over Life")
         sol_label.setObjectName("ParamLabel")
         sol_row.addWidget(sol_label)
-        sol_combo = QComboBox()
+        sol_combo = _NoScrollComboBox()
         sol_combo.addItems(["constant", "grow", "shrink", "pulse"])
         sol_combo.setCurrentText("constant")
         sol_combo.currentTextChanged.connect(lambda val: self._emit("size_over_life", val))
@@ -257,7 +273,7 @@ class Sidebar(QScrollArea):
         fc_label = QLabel("Fade Curve")
         fc_label.setObjectName("ParamLabel")
         fc_row.addWidget(fc_label)
-        fc_combo = QComboBox()
+        fc_combo = _NoScrollComboBox()
         fc_combo.addItems(["linear", "ease_out", "flash"])
         fc_combo.setCurrentText("linear")
         fc_combo.currentTextChanged.connect(lambda val: self._emit("fade_curve", val))
@@ -316,7 +332,7 @@ class Sidebar(QScrollArea):
         res_label = QLabel("Resolution")
         res_label.setObjectName("ParamLabel")
         res_row.addWidget(res_label)
-        res_combo = QComboBox()
+        res_combo = _NoScrollComboBox()
         res_combo.addItems(["1920x1080", "2560x1440", "1280x720", "3840x2160", "640x360"])
         res_combo.setCurrentText("1920x1080")
         res_row.addWidget(res_combo)
