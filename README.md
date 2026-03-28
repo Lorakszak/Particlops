@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="src/particle_gen/assets/logo.png" width="180" alt="Particlops logo" />
+  <img src="src/particle_gen/assets/logo.png" width="240" alt="Particlops logo" />
 </p>
 
 <h1 align="center">Particlops</h1>
 
 <p align="center">
   <strong>Seamlessly looped particle videos for compositing.</strong><br>
-  CLI + GUI &middot; OpenGL 3.3 &middot; Deterministic seeds &middot; 5 built-in presets
+  CLI + GUI &middot; OpenGL 3.3 &middot; Deterministic seeds
 </p>
 
 <p align="center">
