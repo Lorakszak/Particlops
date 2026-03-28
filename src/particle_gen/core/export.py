@@ -132,6 +132,7 @@ class ExportPipeline:
         self.seed = seed
         self.preroll = preroll if preroll is not None else max(preset.lifetime * 3, 5.0)
         self.progress_callback = progress_callback
+        self.cancelled = False
 
     def run(self) -> Path:
         """Execute the full export pipeline. Returns the output path."""
@@ -195,6 +196,9 @@ class ExportPipeline:
 
         try:
             for frame_idx in range(total_render_frames):
+                if self.cancelled:
+                    raise RuntimeError("Export cancelled")
+
                 system.step(dt)
                 renderer.render_frame(system, fbo, self.resolution)
                 pixels = renderer.read_pixels(fbo, self.resolution)
@@ -231,10 +235,14 @@ class ExportPipeline:
             # Close ffmpeg processes
             if middle_proc and middle_proc.stdin:
                 middle_proc.stdin.close()
-                middle_proc.wait()
+                ret = middle_proc.wait()
+                if ret != 0:
+                    raise RuntimeError(f"ffmpeg intermediate (middle) exited with code {ret}")
             if blended_proc and blended_proc.stdin:
                 blended_proc.stdin.close()
-                blended_proc.wait()
+                ret = blended_proc.wait()
+                if ret != 0:
+                    raise RuntimeError(f"ffmpeg intermediate (blended) exited with code {ret}")
 
             # Phase 3: Final assembly
             logger.info("Assembling final video: %s", self.output)
@@ -245,15 +253,15 @@ class ExportPipeline:
             )
 
         finally:
+            import shutil
+
             renderer.cleanup()
             ctx.release()
             # Clean up intermediates
-            for p in (blended_path, middle_path):
-                p.unlink(missing_ok=True)
             try:
-                Path(tmp_dir).rmdir()
+                shutil.rmtree(tmp_dir)
             except OSError:
-                pass
+                logger.warning("Failed to clean up temp directory: %s", tmp_dir)
 
         logger.info("Export complete: %s", self.output)
         return self.output
