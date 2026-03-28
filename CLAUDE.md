@@ -6,7 +6,7 @@ Standalone CLI + GUI tool for generating seamlessly looped particle videos on bl
 
 ```bash
 uv sync --extra dev          # install deps
-uv run pytest tests/ -v      # run tests (33 tests)
+uv run pytest tests/ -v      # run tests (42 tests)
 uv run ruff check src/ tests/ # lint
 uv run pyright src/           # type check
 uv run particlops --help      # CLI help
@@ -20,7 +20,7 @@ src/particle_gen/
   app.py              -- PySide6 QApplication bootstrap, called by `preview` command
   core/
     particles.py      -- CPU-side particle simulation (numpy arrays, no GPU)
-                         12-column particle array: x, y, vx, vy, age, lifetime, base_size, r, g, b, alpha, color_idx
+                         13-column particle array: x, y, vx, vy, age, lifetime, base_size, r, g, b, alpha, color_idx, shape
                          Spawn modes: point, line, circle, edges, random
                          Physics: gravity, turbulence, radial force, vortex, drag
                          Lifecycle: size_over_life, fade_curve, color_over_life
