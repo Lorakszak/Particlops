@@ -106,7 +106,7 @@ class ParticleSystem:
         self._spawn(dt)
 
     def get_render_data(self) -> np.ndarray:
-        """Return VBO-ready array: (N, 7) with position(2), size(1), color(3), alpha(1)."""
+        """Return VBO-ready array: (N, 8) with position(2), size(1), color(3), alpha(1), shape(1)."""
         if self.active_count == 0:
             return np.zeros((0, 8), dtype="f4")
 
