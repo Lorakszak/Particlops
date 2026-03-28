@@ -1,4 +1,4 @@
-# particle-gen
+# Particlops
 
 Standalone CLI + GUI tool for generating seamlessly looped particle videos on black backgrounds. Forked from wavern's particle system with all audio-reactive functionality stripped.
 
@@ -9,7 +9,7 @@ uv sync --extra dev          # install deps
 uv run pytest tests/ -v      # run tests (33 tests)
 uv run ruff check src/ tests/ # lint
 uv run pyright src/           # type check
-uv run particle-gen --help    # CLI help
+uv run particlops --help      # CLI help
 ```
 
 ## Architecture

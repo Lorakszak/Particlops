@@ -1,5 +1,5 @@
 [project]
-name = "particle-gen"
+name = "particlops"
 version = "0.1.0"
 description = "Seamlessly looped particle video generator"
 license = "MIT"
@@ -16,7 +16,7 @@ dependencies = [
 dev = ["pytest>=8.0", "ruff>=0.4", "pyright>=1.1"]
 
 [project.scripts]
-particle-gen = "particle_gen.cli:cli"
+particlops = "particle_gen.cli:cli"
 
 [build-system]
 requires = ["hatchling"]

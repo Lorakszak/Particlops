@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self, preset: ParticlePreset) -> None:
         super().__init__()
-        self.setWindowTitle("particle-gen")
+        self.setWindowTitle("Particlops")
         self.resize(1280, 720)
         self._preset = preset
 

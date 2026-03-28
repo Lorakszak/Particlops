@@ -1,4 +1,4 @@
-"""QApplication bootstrap for particle-gen GUI."""
+"""QApplication bootstrap for Particlops GUI."""
 
 import sys
 from importlib import resources

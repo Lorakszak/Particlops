@@ -1,4 +1,4 @@
-"""Dark theme stylesheet for particle-gen GUI."""
+"""Dark theme stylesheet for Particlops GUI."""
 
 DARK_STYLESHEET = """
 QMainWindow, QWidget {

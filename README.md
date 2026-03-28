@@ -1,4 +1,4 @@
-# particle-gen
+# Particlops
 
 A CLI + GUI tool for generating seamlessly looped particle videos on black backgrounds. The output videos are designed to be composited onto other footage using additive or screen blend modes in video editors.
 
@@ -49,19 +49,19 @@ uv sync --extra dev
 Launch the GUI with a live particle preview and sidebar controls:
 
 ```bash
-uv run particle-gen preview
+uv run particlops preview
 ```
 
 Start with a built-in preset:
 
 ```bash
-uv run particle-gen preview --preset stardust
+uv run particlops preview --preset stardust
 ```
 
 Load a custom preset file:
 
 ```bash
-uv run particle-gen preview --preset-file my_preset.json
+uv run particlops preview --preset-file my_preset.json
 ```
 
 The GUI window has:
@@ -77,13 +77,13 @@ You can also load/save presets via the buttons at the top of the sidebar.
 Generate a looped particle video:
 
 ```bash
-uv run particle-gen generate --preset rising_sparks --duration 30 --output sparks.mp4
+uv run particlops generate --preset rising_sparks --duration 30 --output sparks.mp4
 ```
 
 With custom parameters:
 
 ```bash
-uv run particle-gen generate \
+uv run particlops generate \
   --duration 15 \
   --crossfade 5 \
   --resolution 1920x1080 \
@@ -102,7 +102,7 @@ uv run particle-gen generate \
 Quick test render (low-res, short):
 
 ```bash
-uv run particle-gen generate \
+uv run particlops generate \
   --preset stardust \
   --duration 5 \
   --crossfade 2 \
@@ -120,7 +120,7 @@ mpv --loop /tmp/test_loop.mp4
 ### List built-in presets
 
 ```bash
-uv run particle-gen list-presets
+uv run particlops list-presets
 ```
 
 Available presets:
@@ -138,13 +138,13 @@ Available presets:
 Save current CLI settings to a JSON file:
 
 ```bash
-uv run particle-gen generate --preset stardust --vortex 0.3 --save-preset my_preset.json --output out.mp4
+uv run particlops generate --preset stardust --vortex 0.3 --save-preset my_preset.json --output out.mp4
 ```
 
 Use a saved preset:
 
 ```bash
-uv run particle-gen generate --preset-file my_preset.json --output out.mp4
+uv run particlops generate --preset-file my_preset.json --output out.mp4
 ```
 
 ### Reproducible renders
@@ -152,7 +152,7 @@ uv run particle-gen generate --preset-file my_preset.json --output out.mp4
 Use `--seed` for deterministic output:
 
 ```bash
-uv run particle-gen generate --preset fireflies --seed 42 --output fireflies.mp4
+uv run particlops generate --preset fireflies --seed 42 --output fireflies.mp4
 ```
 
 ## How the seamless loop works
@@ -169,7 +169,7 @@ The blended head and middle segments are concatenated and encoded to the final H
 ## CLI reference
 
 ```
-particle-gen generate [OPTIONS]
+particlops generate [OPTIONS]
 
 Core:
   --duration FLOAT       Video length in seconds (default: 30)

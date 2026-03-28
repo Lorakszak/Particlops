@@ -1,4 +1,4 @@
-"""Click CLI for particle-gen -- generate, preview, list-presets."""
+"""Click CLI for Particlops -- generate, preview, list-presets."""
 
 import logging
 import re
@@ -115,7 +115,7 @@ def _collect_overrides(**kwargs: object) -> dict:
 
 @click.group()
 def cli() -> None:
-    """particle-gen: Seamlessly looped particle video generator."""
+    """Particlops: Seamlessly looped particle video generator."""
 
 
 @cli.command()
